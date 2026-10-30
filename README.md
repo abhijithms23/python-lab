@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python Lab — Learn, Code, Build
 
 A data-driven, browser-based Python learning platform built with HTML, CSS, JavaScript, and Pyodide (Python in the browser). Designed for beginner students learning programming concepts interactively.
@@ -89,3 +90,6 @@ git push -u origin main
 - Pyodide requires an internet connection on first load.
 - Very complex Python programs (heavy computation, threading, filesystem) are not supported in the browser environment.
 - The infinite-loop timeout is approximate; very tight loops may still block briefly before being interrupted.
+=======
+# python-learner-data-type-
+>>>>>>> 5b7c5fd628e6a8a8859ff06173e43504c384a181
