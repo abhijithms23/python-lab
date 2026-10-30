@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Lab — Conditional Statements</title>
+  <meta name="description" content="Learn Python Conditional Statements interactively. Write and run real Python in your browser." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- CodeMirror 5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     APP SHELL
+     ════════════════════════════════════════════════════════════════ -->
+<div class="app-shell">
+
+  <!-- ── HEADER ─────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="logo">
+      <span class="logo-icon">🐍</span>
+      <span class="logo-text">Python<span class="logo-accent">Lab</span></span>
+    </div>
+
+    <div id="topic-header">
+      <!-- Filled by app.js -->
+    </div>
+
+    <!-- XP & Progress -->
+    <div class="xp-bar-container" style="position:relative;">
+      <div class="xp-info">
+        <span class="xp-label">⚡ XP</span>
+        <span class="xp-value" id="xp-display">0</span>
+        <span id="xp-level">Level 1</span>
+      </div>
+      <div class="xp-bar-track">
+        <div id="xp-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="badge-display">
+      🏅 <span id="badge-count">0</span> Badges
+    </div>
+
+    <!-- Reset -->
+    <button id="reset-progress-btn" title="Reset all progress">↺ Reset</button>
+  </header>
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────────────── -->
+  <aside class="app-sidebar">
+    <div class="sidebar-label">Stages</div>
+    <nav id="stage-nav">
+      <!-- Built by app.js -->
+    </nav>
+
+    <div class="sidebar-label" style="margin-top:20px;">Progress Note</div>
+    <p style="font-size:0.72rem;color:var(--text-dim);padding:0 8px;line-height:1.5;">
+      💾 Progress is saved in this browser only and will not sync across devices.
+    </p>
+  </aside>
+
+  <!-- ── MAIN CONTENT ────────────────────────────────────────────── -->
+  <main id="main-content">
+
+    <!-- ════════════════════════════════════════════
+         STAGE 1: LEARN
+         ════════════════════════════════════════════ -->
+    <section class="stage-section active" id="learn-section">
+      <div id="learn-container">
+        <!-- Rendered by LessonEngine.renderLearnStage() -->
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         STAGE 2: EXPLORE
+         ════════════════════════════════════════════ -->
+    <section class="stage-section" id="explore-section">
+      <div id="explore-container">
+        <!-- Rendered by LessonEngine.renderExploreStage() -->
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         STAGE 3: PRACTICE
+         ════════════════════════════════════════════ -->
+    <section class="stage-section" id="practice-section">
+      <div id="practice-container">
+        <!-- Rendered by LessonEngine.renderPracticeStage() -->
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         STAGE 4: BUILD
+         ════════════════════════════════════════════ -->
+    <section class="stage-section" id="build-section">
+      <div id="build-container">
+        <!-- Rendered by LessonEngine.renderBuildStage() -->
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         STAGE 5: FREE EDITOR
+         ════════════════════════════════════════════ -->
+    <section class="stage-section" id="editor-section">
+      <div id="editor-container">
+        <!-- Rendered by ChallengeEngine.renderFreeEditor() -->
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         STAGE 6: CHALLENGE
+         ════════════════════════════════════════════ -->
+    <section class="stage-section" id="challenge-section">
+      <div id="challenge-container">
+        <!-- Rendered by ChallengeEngine.renderChallengeStage() -->
+      </div>
+    </section>
+
+  </main><!-- /#main-content -->
+</div><!-- /.app-shell -->
+
+<!-- ── PYODIDE LOADING OVERLAY ───────────────────────────────────────────── -->
+<div id="loading-overlay">
+  <!-- Rendered by app.js -->
+</div>
+
+<!-- ── COMPLETION MODAL ──────────────────────────────────────────────────── -->
+<div id="completion-modal" role="dialog" aria-modal="true">
+  <!-- Rendered by ChallengeEngine.showCompletionModal() -->
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS (order matters)
+     1. Lesson data
+     2. Progress tracker
+     3. Python runner (Pyodide wrapper)
+     4. Lesson engine (stages 1–4)
+     5. Challenge engine (stages 5–6)
+     6. App controller
+     ═══════════════════════════════════════════════════════════ -->
+<script src="data/lessons.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/python-runner.js"></script>
+<script src="js/lesson-engine.js"></script>
+<script src="js/challenge-engine.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
