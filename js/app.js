@@ -1,11 +1,31 @@
 /**
  * app.js — Main application controller for Python Lab.
- * Handles navigation, Pyodide initialization, stage switching, and UI setup.
+ * Handles curriculum topic selection, navigation, Pyodide initialization, and UI setup.
  */
 
 (async function App() {
-  // ── Constants ─────────────────────────────────────────────────────────────
-  const ACTIVE_LESSON_ID = "conditional-statements";
+  // ── Curriculum sequence ──────────────────────────────────────────────────
+  const TOPIC_ORDER = [
+    "python-basics",
+    "variables",
+    "data-types",
+    "type-casting",
+    "operators",
+    "control-flow",
+    "conditional-statements",
+    "for-loop",
+    "while-loop",
+    "functions",
+    "lambda",
+    "data-structures"
+  ];
+
+  let currentTopicId = localStorage.getItem("python_lab_active_topic") || "python-basics";
+  // Fallback if topic not in lessons
+  if (!LESSONS[currentTopicId]) {
+    currentTopicId = "python-basics";
+  }
+
   const STAGES = [
     { id: "learn",     label: "📖 Learn",     icon: "📖" },
     { id: "explore",   label: "🔬 Explore",   icon: "🔬" },
@@ -19,17 +39,15 @@
 
   // ── Boot sequence ─────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", async () => {
+    buildTopicSelector();
     buildNav();
     switchStage("learn");
     setupProgressReset();
     initLoadingOverlay();
     initCompletionModal();
 
-    // Load lesson content immediately (no Pyodide needed for rendering)
-    LessonEngine.init(ACTIVE_LESSON_ID);
-    ChallengeEngine.init(ACTIVE_LESSON_ID);
-    Progress.updateUI();
-    updateTopicHeader();
+    // Load active topic content
+    loadTopic(currentTopicId);
 
     // Load Pyodide in background
     try {
@@ -40,6 +58,67 @@
       console.error(err);
     }
   });
+
+  // ── Topic Loading ─────────────────────────────────────────────────────────
+  function loadTopic(topicId) {
+    if (!LESSONS[topicId]) return;
+    currentTopicId = topicId;
+    localStorage.setItem("python_lab_active_topic", topicId);
+
+    updateTopicHeader();
+    updateTopicSelectorUI();
+
+    LessonEngine.init(currentTopicId);
+    ChallengeEngine.init(currentTopicId);
+    Progress.updateUI();
+
+    document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function buildTopicSelector() {
+    const aside = document.querySelector(".app-sidebar");
+    if (!aside) return;
+
+    // Check if topic list container already exists
+    let topicSection = document.getElementById("topic-selector-section");
+    if (!topicSection) {
+      topicSection = document.createElement("div");
+      topicSection.id = "topic-selector-section";
+      topicSection.style.marginBottom = "18px";
+      topicSection.innerHTML = `
+        <div class="sidebar-label">Curriculum Topics</div>
+        <div id="topic-list" style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto; padding-right:4px;"></div>
+      `;
+      // Insert at the top of the sidebar before stages
+      aside.insertBefore(topicSection, aside.firstChild);
+    }
+
+    const listEl = document.getElementById("topic-list");
+    if (!listEl) return;
+
+    listEl.innerHTML = TOPIC_ORDER.map((id, index) => {
+      const topic = LESSONS[id];
+      if (!topic) return "";
+      const isSelected = id === currentTopicId;
+      return `
+        <button class="nav-btn ${isSelected ? "active" : ""}" 
+                id="topic-btn-${id}" 
+                onclick="App.switchTopic('${id}')" 
+                style="padding:6px 10px; font-size:0.82rem;"
+                title="${topic.title}">
+          <span style="font-size:0.95rem;">${topic.icon || "📄"}</span>
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${index + 1}. ${topic.title.split("&")[0].split(":")[0]}</span>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function updateTopicSelectorUI() {
+    TOPIC_ORDER.forEach((id) => {
+      const btn = document.getElementById(`topic-btn-${id}`);
+      if (btn) btn.classList.toggle("active", id === currentTopicId);
+    });
+  }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   function buildNav() {
@@ -63,14 +142,16 @@
       el.classList.toggle("active", el.id === stageId + "-section");
     });
     document.querySelectorAll(".nav-btn").forEach((btn) => {
-      btn.classList.toggle("active", btn.id === "nav-" + stageId);
+      if (btn.id.startsWith("nav-")) {
+        btn.classList.toggle("active", btn.id === "nav-" + stageId);
+      }
     });
     document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // ── Topic header ──────────────────────────────────────────────────────────
   function updateTopicHeader() {
-    const lesson = LESSONS[ACTIVE_LESSON_ID];
+    const lesson = LESSONS[currentTopicId];
     if (!lesson) return;
     const el = document.getElementById("topic-header");
     if (el) {
@@ -81,8 +162,8 @@
           <span class="topic-meta">${lesson.level} · ${lesson.duration}</span>
         </div>`;
     }
-    document.documentElement.style.setProperty("--accent", lesson.color);
-    document.documentElement.style.setProperty("--accent-secondary", lesson.colorSecondary);
+    if (lesson.color) document.documentElement.style.setProperty("--accent", lesson.color);
+    if (lesson.colorSecondary) document.documentElement.style.setProperty("--accent-secondary", lesson.colorSecondary);
   }
 
   // ── Loading overlay ───────────────────────────────────────────────────────
@@ -134,6 +215,9 @@
     });
   }
 
-  // Expose switchStage globally for inline onclick handlers
-  window.App = { switchStage };
+  // Expose switchStage and switchTopic globally
+  window.App = {
+    switchStage,
+    switchTopic: (topicId) => loadTopic(topicId)
+  };
 })();

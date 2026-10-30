@@ -7,10 +7,12 @@ const ChallengeEngine = (() => {
   let challengeEditor = null;
   let freeEditor = null;
   let currentLesson = null;
+  let hintShown = 0;
 
   function init(lessonId) {
     currentLesson = LESSONS[lessonId];
     if (!currentLesson) return;
+    hintShown = 0;
     renderChallengeStage();
     renderFreeEditor();
   }
@@ -42,7 +44,7 @@ const ChallengeEngine = (() => {
             <h3>💡 Hints</h3>
             <div id="hints-list" class="hints-list"></div>
             <button class="btn btn-secondary btn-sm" id="hint-btn" onclick="ChallengeEngine.showNextHint()">
-              Show Hint (0/${ch.hints.length})
+              Show Hint (0/${ch.hints ? ch.hints.length : 0})
             </button>
           </div>
           <div class="test-results-box" id="test-results-box" style="display:none;">
@@ -88,10 +90,9 @@ const ChallengeEngine = (() => {
     }, 100);
   }
 
-  let hintShown = 0;
   function showNextHint() {
     const ch = currentLesson?.challenge;
-    if (!ch) return;
+    if (!ch || !ch.hints) return;
     if (hintShown >= ch.hints.length) return;
     const hintEl = document.createElement("div");
     hintEl.className = "hint-item";
@@ -117,7 +118,7 @@ const ChallengeEngine = (() => {
     if (error) {
       outputEl.className = "challenge-output error";
       outputEl.innerHTML = `<strong>❌ Error:</strong><pre>${escapeHtml(error)}</pre>
-        <p class="error-tip">💡 Check your indentation, colons after if/elif/else, and variable names.</p>`;
+        <p class="error-tip">💡 Check your indentation, syntax, and variable names.</p>`;
     } else {
       outputEl.className = "challenge-output success";
       outputEl.innerHTML = `<pre>${escapeHtml(output || "(no output)")}</pre>`;
@@ -138,14 +139,16 @@ const ChallengeEngine = (() => {
 
     const results = [];
     for (const tc of ch.testCases) {
-      // Inject the test score at the very top, overriding any score assignment in student code.
-      // This handles both "score = X" already present and the case where it isn't yet.
-      let testCode;
-      if (/score\s*=\s*[-\d]+/.test(code)) {
-        testCode = code.replace(/score\s*=\s*[-\d]+/, `score = ${tc.score}`);
-      } else {
-        testCode = `score = ${tc.score}\n` + code;
+      let testCode = code;
+      // If test case has score substitution (conditional statements)
+      if (currentLesson.id === "conditional-statements" && tc.score !== undefined) {
+        if (/score\s*=\s*[-\d]+/.test(code)) {
+          testCode = code.replace(/score\s*=\s*[-\d]+/, `score = ${tc.score}`);
+        } else {
+          testCode = `score = ${tc.score}\n` + code;
+        }
       }
+
       const { output, error } = await PythonRunner.run(testCode);
       const combined = ((output || "") + " " + (error || "")).toLowerCase();
       const passed = tc.mustContain.some((kw) => combined.includes(kw.toLowerCase()));
@@ -163,7 +166,6 @@ const ChallengeEngine = (() => {
         <span class="test-icon">${r.passed ? "✅" : "❌"}</span>
         <div class="test-info">
           <strong>${r.description}</strong>
-          <code>score = ${r.score}</code>
           ${!r.passed ? `<span class="test-got">Got: ${escapeHtml(r.actual || "(no output)")}</span>` : ""}
         </div>
       </div>`

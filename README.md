@@ -1,95 +1,79 @@
-<<<<<<< HEAD
-# Python Lab — Learn, Code, Build
+# Python Lab — Learn, Code, Build 🐍
 
-A data-driven, browser-based Python learning platform built with HTML, CSS, JavaScript, and Pyodide (Python in the browser). Designed for beginner students learning programming concepts interactively.
+A comprehensive, data-driven, browser-based Python learning platform built with HTML, CSS, JavaScript, and Pyodide (Python in the browser). Designed for students, educators, and cybersecurity enthusiasts to learn programming interactively.
 
-## 🚀 Current Topic: Conditional Statements
+---
 
-Students learn `if`, `elif`, `else`, comparison operators, and logical operators through:
+## 🚀 Complete Interactive Curriculum (12 Topics)
 
-| Stage | Name | Description |
-|-------|------|-------------|
-| 📖 1 | **Learn** | 5 accordion lessons with runnable examples |
-| 🔬 2 | **Explore** | Live Decision Tree Visualizer (sliders + toggles) |
-| ✏️ 3 | **Practice** | 3 progressive exercises (Easy / Medium / Hard) |
-| 🏗️ 4 | **Build** | Traffic Light Simulator mini-project |
-| 🐍 5 | **Editor** | Free Python editor with input support |
-| 🎯 6 | **Challenge** | Smart Grade Calculator with 7 automated tests |
+Python Lab includes full 7-stage learning tracks for:
 
-## 📁 File Structure
+1. **Python Basics & Syntax** (`python-basics`) — print, comments, math expressions
+2. **Variables & Assignment** (`variables`) — storage, incrementing, Pythonic swapping
+3. **Data Types** (`data-types`) — int, float, str, bool, and type checking
+4. **Type Casting** (`type-casting`) — conversions with int(), float(), str(), bool()
+5. **Python Operators** (`operators`) — arithmetic, modulo, floor division, powers, logical
+6. **Control Flow** (`control-flow`) — execution pathways, pass, break, continue
+7. **Conditional Statements** (`conditional-statements`) — if, elif, else, decision tree explorer
+8. **For Loops & Iteration** (`for-loop`) — sequence iteration, range(start, stop, step)
+9. **While Loops** (`while-loop`) — condition-driven loops, sentinel control, break conditions
+10. **Functions & Reusable Code** (`functions`) — def, parameters, default arguments, return
+11. **Lambda & Anonymous Functions** (`lambda`) — map, filter, custom sort keys
+12. **Data Structures** (`data-structures`) — Lists, Tuples, Sets, and Dictionaries
+
+---
+
+## 🎮 The 7 Educational Stages in Each Topic
+
+Every single topic is organized into:
+
+| Stage | Name | Educational Design |
+|---|---|---|
+| 📖 1 | **Learn** | Short, jargon-free lessons with live runnable examples (+10 XP) |
+| 🔬 2 | **Explore** | Visual & interactive concept sandbox to observe state changes |
+| ✏️ 3 | **Practice** | 3 progressive exercises (Easy, Medium, Hard) with step-by-step hints (+25 XP) |
+| 🏗️ 4 | **Build** | Meaningful mini-project connecting code to real-world applications |
+| 🐍 5 | **Editor** | Free-form Python workspace with terminal input and standard output |
+| 🧪 6 | **Test & Challenge** | Topic-specific coding challenge with automated behavioral test cases |
+| 🏆 7 | **Complete** | XP rewards, topic badges, and skill mastery milestones |
+
+---
+
+## 📁 Repository Structure
 
 ```
 python-lab/
-├── index.html              # App shell & stage sections
+├── index.html              # Responsive app shell & topic viewer
 ├── css/
-│   └── style.css           # Full responsive UI (dark theme)
-├── js/
-│   ├── app.js              # Navigation, boot sequence, modals
-│   ├── python-runner.js    # Pyodide wrapper (run, test, input)
-│   ├── lesson-engine.js    # Stages 1–4 renderer
-│   ├── challenge-engine.js # Stages 5–6 renderer + test runner
-│   └── progress.js         # XP, badges, localStorage
+│   └── style.css           # Modern dark-theme game-inspired UI
 ├── data/
-│   └── lessons.js          # All lesson content (data-driven)
+│   └── lessons.js          # 12 complete curriculum topics (data-driven)
+├── js/
+│   ├── app.js              # Topic router, stage switcher & boot sequence
+│   ├── python-runner.js    # In-browser Pyodide engine & timeout guard
+│   ├── lesson-engine.js    # Dynamic renderer for Stages 1–4
+│   ├── challenge-engine.js # Automated test runner for Stages 5–6
+│   └── progress.js         # XP, level tracker, badges & LocalStorage
 └── README.md
 ```
 
-## 🖥️ Running Locally
+---
 
-Simply open `index.html` in any modern browser.
+## 💻 Running Locally
 
-> **Note:** Pyodide (Python engine) requires an internet connection to download (~10 MB). The lesson text and explorer load instantly; only the code execution areas wait for Pyodide.
+Simply serve with Python's built-in HTTP server:
 
-Or serve with Python's built-in server:
 ```bash
 cd python-lab
 python -m http.server 8080
-# Open http://localhost:8080
+# Open http://localhost:8080 in your browser
 ```
 
-## 🌐 Deploying to GitHub Pages
+Or open `index.html` directly in any web browser.
 
-```bash
-# 1. Create a new GitHub repository
-git init
-git add .
-git commit -m "Initial commit — Python Lab: Conditional Statements"
+---
 
-# 2. Push to GitHub
-git remote add origin https://github.com/YOUR_USERNAME/python-lab.git
-git push -u origin main
+## 🌐 Live GitHub Pages
 
-# 3. Enable GitHub Pages
-# → Repository Settings → Pages → Source: main branch / root
-# → Site will be live at https://YOUR_USERNAME.github.io/python-lab/
-```
-
-## ➕ Adding a New Topic
-
-1. Add a new entry to `data/lessons.js` with the key being a kebab-case topic ID (e.g. `"python-loops"`).
-2. Fill in all required fields: `lessons`, `exercises`, `project`, `challenge`, `completion`, `editorStarterCode`.
-3. Change `ACTIVE_LESSON_ID` in `js/app.js` to the new key.
-4. No changes to the engine files are needed for standard topics.
-
-## ✅ Features
-
-- ✅ Real Python execution via Pyodide (no backend)
-- ✅ CodeMirror 5 editor with Python syntax highlighting
-- ✅ input() support via pre-supplied input queue
-- ✅ 8-second timeout guard against infinite loops
-- ✅ XP system + badge unlocks via localStorage
-- ✅ Mobile-responsive layout
-- ✅ Data-driven lesson content (easy to extend)
-- ✅ Progressive hints system
-- ✅ Automated test runner for challenge evaluation
-- ✅ Works on GitHub Pages (100% static)
-
-## ⚠️ Limitations
-
-- Progress is stored in the browser's localStorage — it does not sync across devices or browsers.
-- Pyodide requires an internet connection on first load.
-- Very complex Python programs (heavy computation, threading, filesystem) are not supported in the browser environment.
-- The infinite-loop timeout is approximate; very tight loops may still block briefly before being interrupted.
-=======
-# python-learner-data-type-
->>>>>>> 5b7c5fd628e6a8a8859ff06173e43504c384a181
+The website is hosted on GitHub Pages:
+**[https://abhijithms23.github.io/python-lab/](https://abhijithms23.github.io/python-lab/)**

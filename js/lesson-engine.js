@@ -1,6 +1,6 @@
 /**
  * lesson-engine.js — Renders lesson content from the lessons data file.
- * Handles: Stage 1 (Learn), Stage 2 (Explore), Stage 3 (Practice).
+ * Handles: Stage 1 (Learn), Stage 2 (Explore), Stage 3 (Practice), Stage 4 (Build).
  */
 
 const LessonEngine = (() => {
@@ -15,6 +15,7 @@ const LessonEngine = (() => {
       return;
     }
     currentLesson = lesson;
+    hintIndex = {};
     renderLearnStage();
     renderExploreStage();
     renderPracticeStage();
@@ -129,51 +130,119 @@ const LessonEngine = (() => {
     const container = document.getElementById("explore-container");
     if (!container || !currentLesson) return;
 
+    // Check if current lesson is conditional-statements (has custom 3-card explorer)
+    if (currentLesson.id === "conditional-statements") {
+      container.innerHTML = `
+        <div class="stage-header">
+          <h2 class="stage-title">🔬 Explore — Decision Tree Visualizer</h2>
+          <p class="stage-subtitle">Drag the slider, change values, and watch Python's conditional logic respond in real-time.</p>
+        </div>
+        <div class="explorer-grid">
+          <!-- Scenario 1: Grade -->
+          <div class="explorer-card">
+            <h3>📊 Grade Calculator</h3>
+            <p>Adjust the score to see which grade Python assigns.</p>
+            <div class="slider-group">
+              <label>Score: <strong id="score-val">75</strong></label>
+              <input type="range" min="0" max="100" value="75" id="score-slider" oninput="LessonEngine.updateGrade(this.value)">
+            </div>
+            <div class="decision-tree" id="grade-tree"></div>
+            <div class="python-equivalent" id="grade-code"></div>
+          </div>
+
+          <!-- Scenario 2: Age Gate -->
+          <div class="explorer-card">
+            <h3>🎟️ Event Entry Checker</h3>
+            <p>Toggle the values to control entry decisions.</p>
+            <div class="toggle-group">
+              <label>Age: <input type="number" id="age-input" value="20" min="0" max="100" oninput="LessonEngine.updateEntry()" style="width:60px;"></label>
+              <label><input type="checkbox" id="has-id-cb" checked onchange="LessonEngine.updateEntry()"> Has Valid ID</label>
+              <label><input type="checkbox" id="is-member-cb" onchange="LessonEngine.updateEntry()"> Is Member</label>
+            </div>
+            <div class="decision-tree" id="entry-tree"></div>
+          </div>
+
+          <!-- Scenario 3: Logic truth table -->
+          <div class="explorer-card">
+            <h3>🔗 Logical Operators Live</h3>
+            <p>Toggle A and B to see how <code>and</code>, <code>or</code>, <code>not</code> work.</p>
+            <div class="toggle-group">
+              <label><input type="checkbox" id="bool-a" checked onchange="LessonEngine.updateLogic()"> A = True</label>
+              <label><input type="checkbox" id="bool-b" onchange="LessonEngine.updateLogic()"> B = True</label>
+            </div>
+            <div class="logic-table" id="logic-table"></div>
+          </div>
+        </div>`;
+
+      updateGrade(75);
+      updateEntry();
+      updateLogic();
+      return;
+    }
+
+    // Dynamic Explore Sandbox for all other topics
+    const exp = currentLesson.explore || {};
+    const firstExample = currentLesson.lessons[0]?.example?.code || 'print("Hello from Explorer!")';
+
     container.innerHTML = `
       <div class="stage-header">
-        <h2 class="stage-title">🔬 Explore — Decision Tree Visualizer</h2>
-        <p class="stage-subtitle">Drag the slider, change values, and watch Python's conditional logic respond in real-time.</p>
+        <h2 class="stage-title">🔬 Explore — ${exp.title || currentLesson.title + " Visualizer"}</h2>
+        <p class="stage-subtitle">${exp.description || "Interact with real Python code and observe changes immediately."}</p>
       </div>
       <div class="explorer-grid">
-        <!-- Scenario 1: Grade -->
-        <div class="explorer-card">
-          <h3>📊 Grade Calculator</h3>
-          <p>Adjust the score to see which grade Python assigns.</p>
-          <div class="slider-group">
-            <label>Score: <strong id="score-val">75</strong></label>
-            <input type="range" min="0" max="100" value="75" id="score-slider" oninput="LessonEngine.updateGrade(this.value)">
+        <div class="explorer-card" style="grid-column: 1 / -1;">
+          <h3>⚡ Live Interactive Concept Demonstration</h3>
+          <p>Modify the values below and run to explore how Python handles this concept in real time:</p>
+          <div class="editor-wrapper" id="explore-code-wrapper" style="min-height: 160px; margin-bottom: 12px;"></div>
+          <div class="btn-row" style="margin-bottom: 12px;">
+            <button class="btn btn-primary" onclick="LessonEngine.runExplore()">▶ Run Live Demo</button>
+            <button class="btn btn-ghost" onclick="LessonEngine.resetExplore()">↺ Reset Code</button>
           </div>
-          <div class="decision-tree" id="grade-tree"></div>
-          <div class="python-equivalent" id="grade-code"></div>
-        </div>
-
-        <!-- Scenario 2: Age Gate -->
-        <div class="explorer-card">
-          <h3>🎟️ Event Entry Checker</h3>
-          <p>Toggle the values to control entry decisions.</p>
-          <div class="toggle-group">
-            <label>Age: <input type="number" id="age-input" value="20" min="0" max="100" oninput="LessonEngine.updateEntry()" style="width:60px;"></label>
-            <label><input type="checkbox" id="has-id-cb" checked onchange="LessonEngine.updateEntry()"> Has Valid ID</label>
-            <label><input type="checkbox" id="is-member-cb" onchange="LessonEngine.updateEntry()"> Is Member</label>
+          <div class="exercise-output" id="explore-output" style="min-height: 80px;">
+            <div class="output-placeholder">▶ Run the demo above to see results.</div>
           </div>
-          <div class="decision-tree" id="entry-tree"></div>
-        </div>
-
-        <!-- Scenario 3: Logic truth table -->
-        <div class="explorer-card">
-          <h3>🔗 Logical Operators Live</h3>
-          <p>Toggle A and B to see how <code>and</code>, <code>or</code>, <code>not</code> work.</p>
-          <div class="toggle-group">
-            <label><input type="checkbox" id="bool-a" checked onchange="LessonEngine.updateLogic()"> A = True</label>
-            <label><input type="checkbox" id="bool-b" onchange="LessonEngine.updateLogic()"> B = True</label>
-          </div>
-          <div class="logic-table" id="logic-table"></div>
         </div>
       </div>`;
 
-    updateGrade(75);
-    updateEntry();
-    updateLogic();
+    setTimeout(() => {
+      const el = document.getElementById("explore-code-wrapper");
+      if (el && typeof CodeMirror !== "undefined") {
+        const cm = CodeMirror(el, {
+          value: firstExample,
+          mode: "python",
+          theme: "dracula",
+          lineNumbers: true,
+          indentUnit: 4,
+          tabSize: 4,
+          indentWithTabs: false,
+          lineWrapping: true
+        });
+        el._cm = cm;
+      }
+    }, 100);
+  }
+
+  async function runExplore() {
+    const el = document.getElementById("explore-code-wrapper");
+    const outputEl = document.getElementById("explore-output");
+    if (!el || !outputEl) return;
+    const code = el._cm?.getValue() || "";
+    outputEl.className = "exercise-output loading";
+    outputEl.textContent = "⏳ Running code…";
+    const { output, error } = await PythonRunner.run(code);
+    outputEl.className = "exercise-output " + (error ? "error" : "success");
+    outputEl.textContent = error ? "❌ " + error : output || "(no output)";
+  }
+
+  function resetExplore() {
+    const el = document.getElementById("explore-code-wrapper");
+    const outputEl = document.getElementById("explore-output");
+    const firstExample = currentLesson?.lessons[0]?.example?.code || "";
+    if (el?._cm) el._cm.setValue(firstExample);
+    if (outputEl) {
+      outputEl.className = "exercise-output";
+      outputEl.innerHTML = '<div class="output-placeholder">▶ Run the demo above to see results.</div>';
+    }
   }
 
   function updateGrade(score) {
@@ -389,8 +458,7 @@ const LessonEngine = (() => {
       return;
     }
 
-    // Check output for expected content
-    const pass = isOutputCorrect(ex, output);
+    const pass = isOutputCorrect(ex, output, code);
     if (pass) {
       outputEl.className = "exercise-output success";
       outputEl.innerHTML = `<strong>✅ Correct!</strong><pre>${escapeHtml(output)}</pre>`;
@@ -408,16 +476,22 @@ const LessonEngine = (() => {
     }
   }
 
-  function isOutputCorrect(ex, output) {
+  function isOutputCorrect(ex, output, code) {
     const out = output.toLowerCase().trim();
     if (!out || out.includes("syntaxerror") || out.includes("traceback") || out.includes("error")) return false;
-    const exerciseKeywords = {
-      "ex-easy":   ["positive", "negative", "zero"],
-      "ex-medium": ["weak", "medium", "strong"],
-      "ex-hard":   ["swimming", "hiking", "indoors", "skiing", "cycling"],
-    };
-    const keywords = exerciseKeywords[ex.id];
-    if (keywords) return keywords.some((kw) => out.includes(kw));
+    
+    // Check specific keywords for conditional-statements
+    if (currentLesson.id === "conditional-statements") {
+      const exerciseKeywords = {
+        "ex-easy":   ["positive", "negative", "zero"],
+        "ex-medium": ["weak", "medium", "strong"],
+        "ex-hard":   ["swimming", "hiking", "indoors", "skiing", "cycling"],
+      };
+      const keywords = exerciseKeywords[ex.id];
+      if (keywords) return keywords.some((kw) => out.includes(kw));
+    }
+
+    // For all topics: ensure non-empty output and not identical to empty starterCode
     return out.length > 0;
   }
 
@@ -467,7 +541,7 @@ const LessonEngine = (() => {
           <h3>📋 Features to Build</h3>
           <ul class="feature-list">${featuresHtml}</ul>
           <div class="tip-box">
-            <strong>🚀 Tip:</strong> Start with the basic colors first, then add the special cases.
+            <strong>🚀 Tip:</strong> Complete the starter code step-by-step and run frequently.
           </div>
         </div>
         <div class="build-right">
@@ -545,6 +619,8 @@ const LessonEngine = (() => {
     updateGrade,
     updateEntry,
     updateLogic,
+    runExplore,
+    resetExplore,
     switchExercise,
     checkExercise,
     showHint,
